@@ -1,0 +1,7 @@
+[package]
+name = "activitydesk"
+version = "0.1.0"
+authors = ["Jacky Alciné <yo@jacky.wtf>"]
+edition = "2018"
+
+[dependencies]
