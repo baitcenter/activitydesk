@@ -10,7 +10,9 @@ build = "build.rs"
 
 [dependencies]
 libc = "0.2"
-webfinger = "0.4.0"
+xdg = "2.2.0"
+elefren = "0.19.0"
+reqwest = "0.9.2"
 
 [build-dependencies]
 rust_qt_binding_generator = "0.3"

@@ -3,7 +3,7 @@
   "rust": {
     "dir": "",
     "interfaceModule": "interface",
-    "implementationModule": "implementation"
+    "implementationModule": "qtimpl"
   },
   "objects": {}
 }
