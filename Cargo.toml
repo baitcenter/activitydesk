@@ -1,7 +1,15 @@
 [package]
 name = "activitydesk"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Jacky Alciné <yo@jacky.wtf>"]
 edition = "2018"
+description = "A desktop client for social networking."
+license = "AGPL-3.0-or-later"
+repository = "https://anongit.kde.org/scratch/jalcine/activitydesk"
+build = "build.rs"
 
 [dependencies]
+libc = "0.2"
+
+[build-dependencies]
+rust_qt_binding_generator = "0.3"

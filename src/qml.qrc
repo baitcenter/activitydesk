@@ -1,0 +1,6 @@
+<!-- vim: set ft=xml : -->
+<RCC>
+    <qresource prefix="/">
+        <file>qml/login.qml</file>
+    </qresource>
+</RCC>

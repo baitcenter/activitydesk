@@ -1,0 +1,9 @@
+{
+  "cppFile": "bindings.cxx",
+  "rust": {
+    "dir": "",
+    "interfaceModule": "interface",
+    "implementationModule": "implementation"
+  },
+  "objects": {}
+}
