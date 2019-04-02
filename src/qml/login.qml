@@ -10,12 +10,12 @@ Window {
   height: 512
   title: qsTr("Login - ActivityDesk")
 
-    SystemPalette {
-        id: palette
-        colorGroup: SystemPalette.Active
-    }
+  SystemPalette {
+    id: palette
+    colorGroup: SystemPalette.Active
+  }
 
-    FontMetrics {
-        id: systemFont
-    }
+  FontMetrics {
+    id: systemFont
+  }
 }
