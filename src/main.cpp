@@ -34,9 +34,10 @@ int main_cpp()
     int argc = 1;
     char* argv[1] = { "activitydesk" };
     QGuiApplication app(argc, argv);
-    /* qmlRegisterType<MailModel>("RustCode", 1, 0, "MailModel"); */
+    qmlRegisterType<SessionModel>("RustCode", 1, 0, "SessionModel");
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/qml/login.qml")));
+
+    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
     return app.exec();
 }

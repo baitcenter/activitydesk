@@ -5,5 +5,7 @@
     "interfaceModule": "interface",
     "implementationModule": "qtimpl"
   },
-  "objects": {}
+  "objects": {
+    "SessionModel": {}
+  }
 }
