@@ -1,8 +1,0 @@
-<!-- vim: set ft=xml : -->
-<RCC>
-    <qresource prefix="/">
-        <file>qml/main.qml</file>
-        <file>qml/accounts/new/indieauth.qml</file>
-        <file>qml/accounts/new/mastodon.qml</file>
-    </qresource>
-</RCC>

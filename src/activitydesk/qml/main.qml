@@ -10,6 +10,7 @@ ApplicationWindow {
   width: 480
   height: 640
   title: qsTr("ActivityDesk")
+
   menuBar: MenuBar {
     id: menuBar
     Menu {
@@ -28,7 +29,10 @@ ApplicationWindow {
     Menu {
       title: "Account"
 
-      MenuItem { text: "Add" }
+      MenuItem {
+        text: "Add"
+        onTriggered: { addAccountMenuItem_clicked() }
+      }
       MenuItem { text: "Remove" }
 
       MenuSeparator {}
@@ -56,30 +60,15 @@ ApplicationWindow {
   TabView {
     id: tabView
     anchors.fill: parent
-    Tab { title: "Home"
-    ListView {
-      anchors.fill: parent
-      delegate: Text {
-        text: name + ": " + number
-      }
-      model: ListModel {
-        ListElement {
-          name: "Bill Smith"
-          number: "555 3264"
-        }
-        ListElement {
-          name: "John Brown"
-          number: "555 8426"
-        }
-        ListElement {
-          name: "Sam Wise"
-          number: "555 0473"
-        }
-      }
-    }
-
+    Tab { title: "Home" }
+    Tab { title: "Mentions" }
+    Tab { title: "Direct Messages" }
   }
-  Tab { title: "Mentions" }
-  Tab { title: "Direct Messages" }
-}
+
+  // TODO: Refactor this into a helper method.
+  function addAccountMenuItem_clicked() {
+    const dialogKlass = Qt.createComponent("qrc:/qml/Accounts/New.qml");
+    const dialog = dialogKlass.createObject(mainWindow);
+    dialog.visible = true;
+  }
 }
