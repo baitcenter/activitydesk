@@ -65,6 +65,12 @@ ApplicationWindow {
     Tab { title: "Direct Messages" }
   }
 
+  Component.onCompleted : {
+    Qt.application.name = "ActivityDesk"
+    Qt.application.organization = "black.af"
+    Qt.application.domain = "black.af"
+  }
+
   // TODO: Refactor this into a helper method.
   function addAccountMenuItem_clicked() {
     const dialogKlass = Qt.createComponent("qrc:/qml/Accounts/New.qml");
