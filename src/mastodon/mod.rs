@@ -1,11 +1,20 @@
 use crate::activitydesk::get_base_domain;
 use elefren::apps::App;
+use elefren::apps::AppBuilder;
+use elefren::scopes::Scopes;
 pub mod account;
+pub mod http;
 
-pub fn app() -> Option<App> {
-    let mut app = App::builder();
-    app.client_name("ActivityDesk");
-    return Some(app.build().unwrap());
+pub fn app() -> App {
+    let mut app_builder: AppBuilder = App::builder();
+    app_builder.client_name("ActivityDesk");
+    app_builder.website("https://activitydesk.black.af");
+    app_builder.scopes(Scopes::all());
+
+    return match app_builder.build() {
+        Ok(built_app) => built_app,
+        _ => App::default(),
+    };
 }
 
 pub fn supported(url: &str) -> Option<bool> {

@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate lazy_static;
+extern crate elefren;
+
 mod activitydesk;
 mod indieweb;
 mod mastodon;
