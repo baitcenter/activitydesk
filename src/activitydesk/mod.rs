@@ -1,4 +1,5 @@
 pub mod account;
+pub mod profile;
 pub mod qt;
 
 pub fn base_user_agent() -> &'static str {

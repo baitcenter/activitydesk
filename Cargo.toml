@@ -7,6 +7,13 @@ edition = "2018"
 description = "A desktop client for social networking."
 license = "AGPL-3.0-or-later"
 repository = "https://anongit.kde.org/scratch/jalcine/activitydesk"
+build = "src/build.rs"
+
+[package.metadata.pkg-config]
+Qt5Core = "5.0"
+Qt5Widgets = "5.0"
+Qt5Qml = "5.0"
+Qt5Quick = "5.0"
 
 [dependencies]
 cstr = "*"
@@ -14,8 +21,8 @@ libc = "*"
 qmetaobject = "*"
 soup = "*"
 reqwest = "*"
-log = "*"
-env_logger = "*"
 url = "*"
-elefren = "0.20.0"
-lazy_static = "*"
+elefren = "*"
+
+[build-dependencies]
+metadeps = "*"

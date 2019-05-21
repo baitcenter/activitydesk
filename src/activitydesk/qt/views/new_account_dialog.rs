@@ -1,50 +1,34 @@
-use crate::activitydesk::account::resolver::get_type_for_profile_url;
-use crate::indieweb::indieauth as indieweb_account;
-use crate::mastodon::account as mastodon_account;
+use crate::activitydesk::account::AuthenticableAccount;
+use crate::activitydesk::account::{build_for, resolve_service_type};
 use qmetaobject::*;
 
 #[derive(Default, QObject)]
 pub struct Handler {
-    profile_url: String,
-    kind: String,
     base: qt_base_class!(trait QObject),
+    handle: Box<AuthenticableAccount>,
 
-    resolve_profile_kind: qt_method!(fn resolve_profile_kind(&mut self, url: String) -> QString {
-        return match get_type_for_profile_url(url.as_str()) {
+    prepare_for: qt_method!(fn prepare_for(&mut self, account_type: String, profile_url: String) {
+        self.handle = build_for(account_type.as_str(), profile_url.as_str());
+    }),
+
+    resolve_service_type: qt_method!(fn resolve_service_type(&mut self, url: String) -> QString {
+        return match resolve_service_type(url.as_str()) {
             Some(result) => QString::from(result),
             _ => QString::from("unknown")
         };
     }),
 
-    get_auth_url: qt_method!(fn get_auth_url(&mut self, site_type: String, url: String) -> QString {
-        self.profile_url = String::from(url.as_str());
-        self.kind = String::from(site_type.as_str());
-        if (site_type == "indieweb") & indieweb_account::supported(url.as_str()) {
-            return match indieweb_account::get_authorization_request_url(url.as_str()) {
-                None => QString::from(""),
-                Some(auth_url) => QString::from(auth_url),
-            }
-        } else if site_type == "mastodon" {
-            let instance_host = crate::activitydesk::get_base_domain(url.as_str());
-            return match mastodon_account::get_authorization_url(instance_host.unwrap().as_str()) {
-                None => QString::from(""),
-                Some(auth_url) => QString::from(auth_url),
-            }
-        } else {
-            return QString::from("");
+    get_url: qt_method!(fn get_url(&mut self) -> QString {
+        return match self.handle.get_authorization_url() {
+            Some(url) => QString::from(url),
+            _ => QString::from("")
         }
     }),
 
-    get_auth_token: qt_method!(fn get_auth_token(&mut self, authorization_code: String) -> QString {
-        return match self.kind.as_str() {
-            "mastodon" => {
-                let instance_host = crate::activitydesk::get_base_domain(self.profile_url.as_str());
-                return match mastodon_account::get_authorization_token(instance_host.unwrap().as_str(), authorization_code.as_str()) {
-                    None => QString::from(""),
-                    Some(token) => QString::from(token),
-                };
-            }
-            _ => QString::from(""),
+    get_token: qt_method!(fn get_token(&mut self, authorization_code: String) -> QString {
+        return match self.handle.get_authentication_token(authorization_code.as_str()) {
+            Some(token) => QString::from(token),
+            _ => QString::from("")
         }
     }),
 }

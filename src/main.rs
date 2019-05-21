@@ -1,7 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate elefren;
-
 mod activitydesk;
 mod indieweb;
 mod mastodon;
@@ -20,7 +16,6 @@ qrc! {
 
 fn main() {
     qml_resources();
-    env_logger::init();
     let mut qt = activitydesk::qt::core::setup();
     activitydesk::qt::core::run(&mut qt);
 }

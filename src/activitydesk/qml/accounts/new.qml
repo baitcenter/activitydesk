@@ -69,10 +69,11 @@ Window {
           text: "Continue"
           onClicked: {
             const profileUrl = textFieldProfileURL.text;
-            const result_type = handler.resolve_profile_kind(profileUrl);
+            const result_type = handler.resolve_account_type(profileUrl);
 
             if (result_type != "unknown") {
-              const authUrl = handler.get_auth_url(result_type, profileUrl);
+              handler.prepare_for(result_type, profileUrl);
+              const authUrl = handler.get_url();
               Qt.openUrlExternally(authUrl);
               settingsAccount.category = "Account " + Qt.md5(profileUrl);
               settingsAccount.url = profileUrl;
@@ -123,7 +124,7 @@ Window {
           text: "Confirm Code"
           onClicked: {
             const code = textFieldAuthorizationCode.text
-            const authToken = handler.get_auth_token(code);
+            const authToken = handler.get_token(code);
             if (authToken != "") {
               settingsAccount.token = authToken;
               stack.replace(viewShowProfile);
