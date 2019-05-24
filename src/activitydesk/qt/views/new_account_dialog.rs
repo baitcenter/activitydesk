@@ -1,34 +1,117 @@
-use crate::activitydesk::account::AuthenticableAccount;
-use crate::activitydesk::account::{build_for, resolve_service_type};
+use crate::activitydesk::account::{network_for, Authenticator, User};
 use qmetaobject::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Default, QObject)]
+// TODO: Make marshalling of objects to and from Qt more simpler.
+#[derive(Default, Clone, QGadget, Serialize, Deserialize)]
+pub struct Result {
+    pub user: User,
+    pub network_type: String,
+    pub access_token: String,
+}
+
+struct AccountHandle {
+    handle: Option<Box<Authenticator>>,
+}
+
+impl AccountHandle {
+    fn new() -> Self {
+        Self { handle: None }
+    }
+}
+
+impl Default for AccountHandle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(QObject, Default)]
 pub struct Handler {
     base: qt_base_class!(trait QObject),
-    handle: Box<AuthenticableAccount>,
+    account: AccountHandle,
+    user: User,
+    pub account_token: qt_property!(QString),
+    user_url: qt_property!(QString; READ user_url),
+    user_image_url: qt_property!(QString; READ user_image_url),
 
-    prepare_for: qt_method!(fn prepare_for(&mut self, account_type: String, profile_url: String) {
-        self.handle = build_for(account_type.as_str(), profile_url.as_str());
-    }),
+    prepare_account_for: qt_method!(fn(&mut self, profile_url: String)),
+    get_url: qt_method!(fn(&self) -> QString),
+    has_token: qt_method!(fn(&self) -> bool),
+    can_login: qt_method!(fn(&self) -> bool),
+    obtain_token: qt_method!(fn(&mut self, code: String)),
+    resolve_user: qt_method!(fn(&mut self) -> bool),
+    result: qt_method!(fn(&self) -> QString),
+}
 
-    resolve_service_type: qt_method!(fn resolve_service_type(&mut self, url: String) -> QString {
-        return match resolve_service_type(url.as_str()) {
-            Some(result) => QString::from(result),
-            _ => QString::from("unknown")
+impl Handler {
+    pub fn user_url(&self) -> QString {
+        return match self.account.handle.as_ref() {
+            Some(_) => QString::from(self.user.url.clone()),
+            _ => QString::from(""),
         };
-    }),
+    }
 
-    get_url: qt_method!(fn get_url(&mut self) -> QString {
-        return match self.handle.get_authorization_url() {
-            Some(url) => QString::from(url),
-            _ => QString::from("")
-        }
-    }),
+    pub fn user_image_url(&self) -> QString {
+        return match self.account.handle.as_ref() {
+            Some(_) => QString::from(self.user.image_url.clone()),
+            _ => QString::from(""),
+        };
+    }
 
-    get_token: qt_method!(fn get_token(&mut self, authorization_code: String) -> QString {
-        return match self.handle.get_authentication_token(authorization_code.as_str()) {
-            Some(token) => QString::from(token),
-            _ => QString::from("")
-        }
-    }),
+    pub fn resolve_user(&mut self) -> bool {
+        return match self.account.handle.as_ref() {
+            Some(handle) => {
+                self.user = handle.resolve_user();
+                return true;
+            }
+            _ => false,
+        };
+    }
+
+    pub fn obtain_token(&mut self, code: String) {
+        println!("Attempting to use code {:?}", code);
+        match self.account.handle.as_mut() {
+            Some(handle) => match handle.obtain_access_token(code.as_str()) {
+                Some(token) => {
+                    self.account_token = QString::from(token);
+                    println!("Obtained token: {:?}", self.account_token);
+                }
+                None => println!("Code not valid."),
+            },
+            _ => (),
+        };
+    }
+
+    pub fn result(&self) -> QString {
+        let result = match self.account.handle.as_ref() {
+            Some(handle) => Result {
+                user: self.user.clone(),
+                access_token: self.account_token.to_string(),
+                network_type: handle.network_type(),
+            },
+            _ => Result::default(),
+        };
+
+        return QString::from(serde_json::to_string(&result).unwrap());
+    }
+
+    pub fn prepare_account_for(&mut self, profile_url: String) {
+        self.account.handle = network_for(profile_url.as_str());
+    }
+
+    pub fn can_login(&self) -> bool {
+        return self.account.handle.is_some();
+    }
+
+    pub fn get_url(&self) -> QString {
+        return match self.account.handle.as_ref() {
+            Some(handle) => QString::from(handle.resolve_authorization_url().unwrap()),
+            _ => QString::from(""),
+        };
+    }
+
+    pub fn has_token(&self) -> bool {
+        self.account_token.to_string().is_empty() == false
+    }
 }

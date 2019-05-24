@@ -1,0 +1,22 @@
+﻿{
+    "app-id": "af.black.ActivityDesk",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "18.08",
+    "sdk": "org.freedesktop.Sdk",
+    "command": "activitydesk",
+    "modules": [
+        {
+            "name": "activitydesk",
+            "buildsystem": "simple",
+            "build-commands": [
+                ""
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "path": "/usr/bin/activitydesk"
+                }
+            ]
+        }
+    ]
+}

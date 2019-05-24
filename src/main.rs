@@ -1,3 +1,5 @@
+extern crate hyper;
+
 mod activitydesk;
 mod indieweb;
 mod mastodon;
@@ -16,6 +18,7 @@ qrc! {
 
 fn main() {
     qml_resources();
+    activitydesk::init();
     let mut qt = activitydesk::qt::core::setup();
     activitydesk::qt::core::run(&mut qt);
 }
