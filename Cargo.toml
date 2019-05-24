@@ -7,14 +7,23 @@ edition = "2018"
 description = "A desktop client for social networking."
 license = "AGPL-3.0-or-later"
 repository = "https://anongit.kde.org/scratch/jalcine/activitydesk"
+build = "src/build.rs"
+
+[package.metadata.pkg-config]
+Qt5WebKit = "5.0"
 
 [dependencies]
-cstr = "*"
-libc = "*"
-qmetaobject = "*"
-soup = "*"
-reqwest = "*"
-log = "*"
-env_logger = "*"
-url = "*"
-elefren = "*"
+cstr = "0.1.7"
+libc = "0.2.55"
+qmetaobject = "0.0.5"
+soup = "0.4.1"
+reqwest = "0.9.17"
+url = "1.7.2"
+elefren = "0.20.0"
+serde = {version = "1.0.91", features = ["derive"]}
+serde_json = "1.0.39"
+uuid = { version = "0.7.4", features = ["serde", "v3"] }
+hyper = "0.12.29"
+
+[build-dependencies]
+metadeps = "1.1.2"

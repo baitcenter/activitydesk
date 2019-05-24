@@ -3,6 +3,7 @@ import QtQuick.Controls 1.5
 import QtQuick.Controls.Styles 1.3
 import QtQuick.Layouts 1.5
 import QtQuick.Window 2.7
+import af.black.activitydesk.handlers 0.1
 
 ApplicationWindow {
   id: mainWindow
@@ -10,6 +11,10 @@ ApplicationWindow {
   width: 480
   height: 640
   title: qsTr("ActivityDesk")
+
+  MainWindowHandler {
+    id: handler
+  }
 
   menuBar: MenuBar {
     id: menuBar
@@ -60,15 +65,18 @@ ApplicationWindow {
   TabView {
     id: tabView
     anchors.fill: parent
-    Tab { title: "Home" }
-    Tab { title: "Mentions" }
-    Tab { title: "Direct Messages" }
+  }
+
+  Component.onCompleted : {
+    Qt.application.name = "ActivityDesk"
+    Qt.application.organization = "black.af"
+    Qt.application.domain = "black.af"
+    handler.load_streams()
   }
 
   // TODO: Refactor this into a helper method.
   function addAccountMenuItem_clicked() {
     const dialogKlass = Qt.createComponent("qrc:/qml/Accounts/New.qml");
-    const dialog = dialogKlass.createObject(mainWindow);
-    dialog.visible = true;
+    dialogKlass.createObject(mainWindow, {app_handler: handler, visible: true});
   }
 }

@@ -1,9 +1,131 @@
-use elefren::prelude::Registration;
+use super::app;
+use crate::activitydesk::account::{Authenticator, Builder, User};
+use crate::activitydesk::get_base_domain;
+use elefren::http_send::HttpSender;
+use elefren::registration::{Registered, Registration};
+use elefren::{Mastodon, MastodonClient};
+use reqwest::header;
 
-pub fn get_authorization_url(instance_url: &str) -> Option<String> {
-    let app = crate::mastodon::app()?;
-    match Registration::new(instance_url).register(app) {
-        Ok(registration) => Some(registration.authorize_url().unwrap()),
-        _ => None,
+#[derive(Default)]
+pub struct Account {
+    instance_url: String,
+    access_token: Option<String>,
+    registration: Option<Registered<HttpSender>>,
+    api: Option<Mastodon<HttpSender>>,
+}
+
+impl Authenticator for Account {
+    fn resolve_authorization_url(&self) -> Option<String> {
+        let url_result = self.registration.as_ref()?.authorize_url();
+        return match url_result {
+            Ok(url) => Some(url),
+            _ => None,
+        };
+    }
+
+    fn obtain_access_token(&mut self, authorization_code: &str) -> Option<String> {
+        return match self.registration.as_ref()?.complete(authorization_code) {
+            Ok(app) => {
+                println!("Successfully authenticated with Mastodon.");
+                let data = app.data.clone();
+                let token: String = data.token.into_owned().into();
+                self.access_token = Some(token.clone());
+                self.api = Some(app);
+                return Some(token.clone());
+            }
+            _ => None,
+        };
+    }
+
+    fn access_token(&self) -> Option<String> {
+        self.access_token.clone()
+    }
+
+    fn network_type(&self) -> String {
+        "mastodon".into()
+    }
+
+    fn resolve_user(&self) -> User {
+        return self.into();
+    }
+}
+
+impl Builder for Account {
+    fn supported(url: &str) -> bool {
+        match get_base_domain(url) {
+            Some(instance_host) => {
+                let instance_info_url: String = instance_host + "/api/v1/instance".into();
+                println!(
+                    "Calling {:?} to get instance information...",
+                    instance_info_url
+                );
+
+                return match reqwest::get(instance_info_url.as_str()) {
+                    Ok(result) => {
+                        let server_header = result.headers().get(header::SERVER).unwrap();
+                        println!("Server header: {:?}", server_header);
+                        return server_header == "Mastodon";
+                    }
+                    _ => false,
+                };
+            }
+            _ => {
+                eprintln!("Couldn't resolve a legit domain for {:?}", url);
+                return false;
+            }
+        }
+    }
+
+    fn build_for(url: &str) -> Option<Box<Authenticator>> {
+        let instance_url = get_base_domain(url).unwrap();
+        return match Registration::new(instance_url.clone()).register(app()) {
+            Ok(reg) => Some(Box::new(Account {
+                registration: Some(reg),
+                api: None,
+                access_token: None,
+                instance_url: instance_url,
+            })),
+            Err(err) => {
+                println!("Failed to register application: {:?}", err);
+                return None;
+            }
+        };
+    }
+}
+
+impl From<&Account> for User {
+    fn from(account: &Account) -> User {
+        return match account.api {
+            Some(ref mastodon_api) => {
+                return match mastodon_api.verify_credentials() {
+                    Ok(mastodon_account) => {
+                        return User {
+                            username: mastodon_account.acct,
+                            url: mastodon_account.url,
+                            service_url: account.instance_url.clone(),
+                            image_url: mastodon_account.avatar,
+                        };
+                    }
+                    _ => User::default(),
+                };
+            }
+            _ => User::default(),
+        };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn builder_impl_supported_test_figures_out_by_header() {
+        assert!(Account::supported("https://mastodon.social/@blackaf"));
+        assert!(Account::supported("https://mastodon.social"));
+    }
+
+    #[test]
+    fn builder_impl_supported_test_fails_if_not_visible() {
+        assert!(!Account::supported("https://black.af/"));
     }
 }

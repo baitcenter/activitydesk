@@ -1,4 +1,4 @@
-use crate::activitydesk::qt::views;
+use crate::activitydesk::qt;
 use cstr::*;
 use qmetaobject::*;
 
@@ -27,10 +27,16 @@ pub fn run(inst: &mut Inst) {
 }
 
 fn register_qml_types() {
-    qml_register_type::<views::new_account_dialog::Handler>(
+    qml_register_type::<qt::views::new_account_dialog::Handler>(
         cstr!("af.black.activitydesk.handlers"),
         0,
         1,
         cstr!("NewAccountDialogHandler"),
+    );
+    qml_register_type::<qt::views::main::Handler>(
+        cstr!("af.black.activitydesk.handlers"),
+        0,
+        1,
+        cstr!("MainWindowHandler"),
     );
 }
