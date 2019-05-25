@@ -1,5 +1,6 @@
 pub mod account;
 pub mod qt;
+pub mod settings;
 pub mod stream;
 
 pub fn base_user_agent() -> &'static str {

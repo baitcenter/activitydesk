@@ -2,7 +2,6 @@ use crate::activitydesk::qt;
 use cstr::*;
 use qmetaobject::*;
 
-// TODO: Add QApplication property here.
 pub struct Inst {
     pub engine: QmlEngine,
 }
@@ -22,7 +21,6 @@ pub fn setup() -> Inst {
 }
 
 pub fn run(inst: &mut Inst) {
-    //! TODO: Add a singleton value to the app.
     inst.engine.exec();
 }
 

@@ -1,14 +1,5 @@
-use crate::activitydesk::account::{network_for, Authenticator, User};
+use crate::activitydesk::account::{network_for, Authenticator, Identity, User};
 use qmetaobject::*;
-use serde::{Deserialize, Serialize};
-
-// TODO: Make marshalling of objects to and from Qt more simpler.
-#[derive(Default, Clone, QGadget, Serialize, Deserialize)]
-pub struct Result {
-    pub user: User,
-    pub network_type: String,
-    pub access_token: String,
-}
 
 struct AccountHandle {
     handle: Option<Box<Authenticator>>,
@@ -85,12 +76,12 @@ impl Handler {
 
     pub fn result(&self) -> QString {
         let result = match self.account.handle.as_ref() {
-            Some(handle) => Result {
+            Some(handle) => Identity {
                 user: self.user.clone(),
                 access_token: self.account_token.to_string(),
                 network_type: handle.network_type(),
             },
-            _ => Result::default(),
+            _ => Identity::default(),
         };
 
         return QString::from(serde_json::to_string(&result).unwrap());

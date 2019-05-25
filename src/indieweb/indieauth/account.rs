@@ -13,7 +13,7 @@ pub struct Account {
 }
 
 impl Authenticator for Account {
-    fn resolve_authorization_url(&self) -> Option<String> {
+    fn get_authentication_url(&self) -> Option<String> {
         let resp = reqwest::get(self.url.as_str());
         let rels = extract_from_resp(resp);
         let endpoint = rels.get("authorization_endpoint".into())?.first().unwrap();
@@ -34,13 +34,13 @@ impl Authenticator for Account {
         };
     }
 
-    fn obtain_access_token(&mut self, _code: &str) -> Option<String> {
+    fn obtain_access(&mut self, _code: &str) -> Option<String> {
         // TODO: Build token endpoint URI.
         // TODO: Send request and extract response.
         None
     }
 
-    fn access_token(&self) -> Option<String> {
+    fn generate_access_info(&self) -> Option<String> {
         None
     }
 
@@ -85,7 +85,7 @@ mod tests {
         acc.url = "https://v2.jacky.wtf".into();
         acc.state = Uuid::new_v3(&Uuid::NAMESPACE_URL, "https://v2.jacky.wtf".as_bytes());
         let obtained_url = acc
-            .resolve_authorization_url()
+            .get_authentication_url()
             .unwrap_or("http://invalid".into());
         assert!(obtained_url.starts_with("https://v2.jacky.wtf/indie/auth"));
     }

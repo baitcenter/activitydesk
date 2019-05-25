@@ -24,6 +24,8 @@ serde = {version = "1.0.91", features = ["derive"]}
 serde_json = "1.0.39"
 uuid = { version = "0.7.4", features = ["serde", "v3"] }
 hyper = "0.12.29"
+xdg = "2.0.1"
+secret-service = { version = "0.4.0", features = ["gmp"] }
 
 [build-dependencies]
 metadeps = "1.1.2"

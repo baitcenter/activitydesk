@@ -62,9 +62,89 @@ ApplicationWindow {
     }
   }
 
-  TabView {
-    id: tabView
+  ColumnLayout {
     anchors.fill: parent
+
+    ComboBox {
+      id: accountSelector
+      model: []
+      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+    }
+
+
+    TabView {
+      id: tabView
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+
+      Tab {
+        id: tabTimeline
+        title: "Everything"
+
+        ListView {
+          id: timeline
+          spacing: 8
+          leftMargin: 8
+          rightMargin: 8
+          topMargin: 8
+          bottomMargin: 8
+          anchors.fill: parent
+
+          model: ListModel {
+            id: wow
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/200/200"
+            }
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/150/150/b"
+            }
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/300/300/invert"
+            }
+          }
+
+          delegate: Row {
+            spacing: 8
+
+            Image {
+              source: src
+              sourceSize.width: 96
+              sourceSize.height: 96
+              height: 48
+              width: 48
+              autoTransform: true
+              smooth: false
+              fillMode: Image.PreserveAspectFit
+              opacity: 0.5
+              cache: false
+            }
+
+            ColumnLayout {
+              anchors.leftMargin: 8
+              Text {
+                text: name
+                minimumPixelSize: 10
+                font.pixelSize: 16
+                font.bold: true
+                horizontalAlignment: Text.AlignLeft
+                height: 24
+              }
+
+              Text {
+                topPadding: 4
+                bottomPadding: 4
+                text: content
+                wrapMode: Text.WrapAnywhere
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   Component.onCompleted : {
