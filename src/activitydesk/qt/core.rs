@@ -11,7 +11,7 @@ impl Inst {
         let mut engine = QmlEngine::new();
         engine.load_file("qrc:/qml/Main.qml".into());
 
-        Self { engine: engine }
+        Self { engine }
     }
 }
 
@@ -36,5 +36,11 @@ fn register_qml_types() {
         0,
         1,
         cstr!("MainWindowHandler"),
+    );
+    qml_register_type::<qt::models::identity::List>(
+        cstr!("af.black.activitydesk.models"),
+        0,
+        1,
+        cstr!("IdentityList"),
     );
 }

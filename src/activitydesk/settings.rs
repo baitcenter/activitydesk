@@ -23,7 +23,7 @@ pub fn set_secure(name: &str, value: &str) -> bool {
 }
 
 pub fn list_all_secure() -> Option<Vec<Identity>> {
-    return match service()
+    match service()
         .get_default_collection()
         .expect("No collection.")
         .get_all_items()
@@ -58,5 +58,5 @@ pub fn list_all_secure() -> Option<Vec<Identity>> {
                     .collect(),
             );
         }
-    };
+    }
 }
