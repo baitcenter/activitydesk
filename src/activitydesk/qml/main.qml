@@ -62,9 +62,98 @@ ApplicationWindow {
     }
   }
 
-  TabView {
-    id: tabView
+  ColumnLayout {
     anchors.fill: parent
+
+    ComboBox {
+      id: accountSelector
+      model: []
+      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignTop | Qt.AlignHCenter
+    }
+
+
+    TabView {
+      id: tabView
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+
+      Tab {
+        id: tabTimeline
+        title: "Everything"
+
+        ListView {
+          id: timeline
+          spacing: 8
+          leftMargin: 8
+          rightMargin: 8
+          topMargin: 8
+          bottomMargin: 8
+          anchors.fill: parent
+
+          model: ListModel {
+            id: wow
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/200/200"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            }
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/150/150/b"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            }
+            ListElement {
+              name: "Jacky"
+              src: "http://placedog.net/300/300/invert"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            }
+          }
+
+          delegate: Row {
+            spacing: 8
+
+            Image {
+              source: src
+              sourceSize.width: 96
+              sourceSize.height: 96
+              height: 48
+              width: 48
+              autoTransform: true
+              smooth: false
+              fillMode: Image.PreserveAspectFit
+              opacity: 0.5
+              cache: false
+            }
+
+            ColumnLayout {
+              anchors.leftMargin: 8
+
+              Text {
+                text: name
+                minimumPixelSize: 10
+                font.pixelSize: 16
+                font.bold: true
+                Layout.fillWidth: true
+                Layout.rightMargin: 8
+                horizontalAlignment: Text.AlignLeft
+                height: 24
+              }
+
+              Text {
+                topPadding: 4
+                bottomPadding: 4
+                text: content
+                Layout.fillWidth: true
+                Layout.rightMargin: 8
+                Layout.fillHeight: true
+                wrapMode: Text.WrapAnywhere
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   Component.onCompleted : {

@@ -1,4 +1,5 @@
 extern crate hyper;
+extern crate secret_service;
 
 mod activitydesk;
 mod indieweb;

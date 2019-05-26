@@ -1,10 +1,7 @@
 pub mod account;
+pub mod http;
 pub mod qt;
-pub mod stream;
-
-pub fn base_user_agent() -> &'static str {
-    return "ActivityDesk/0.0.1-dev (https://activitydesk.black.af)";
-}
+pub mod settings;
 
 pub fn get_base_domain(url: &str) -> Option<String> {
     let parsed_url = url::Url::parse(url);
@@ -14,6 +11,4 @@ pub fn get_base_domain(url: &str) -> Option<String> {
     return Some(scheme + "://".into() + hostname);
 }
 
-pub fn init() {
-    stream::init();
-}
+pub fn init() {}

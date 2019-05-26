@@ -1,6 +1,13 @@
+use crate::activitydesk::http;
 use reqwest::{header::HeaderMap, header::LINK, Response, Result};
 use soup::*;
 use std::collections::HashMap;
+
+pub fn extract_from_url(url: &str) -> HashMap<String, Vec<String>> {
+    let client = http::client();
+    let resp = client.get(url).send();
+    return extract_from_resp(resp);
+}
 
 pub fn extract_from_resp(resp: Result<Response>) -> HashMap<String, Vec<String>> {
     match resp {
