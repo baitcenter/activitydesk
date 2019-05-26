@@ -37,19 +37,24 @@ pub fn list_all_secure() -> Option<Vec<Identity>> {
                 items
                     .iter()
                     .filter(|item| {
-                        return item
-                            .get_label()
+                        item.get_label()
                             .unwrap_or(String::default())
-                            .starts_with(SECRET_SERVICE_KEY);
+                            .starts_with(SECRET_SERVICE_KEY)
                     })
                     .map(|item| {
-                        return Identity::from_string(
+                        return match Identity::from_string(
                             String::from_utf8(item.get_secret().expect("welp"))
                                 .expect("works")
                                 .as_str(),
-                        )
-                        .expect("Here it works");
+                        ) {
+                            Some(identity) => identity,
+                            None => {
+                                println!("nope");
+                                return Identity::default();
+                            }
+                        };
                     })
+                    .filter(|item| item.user.url != String::default())
                     .collect(),
             );
         }

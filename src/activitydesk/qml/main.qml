@@ -96,14 +96,17 @@ ApplicationWindow {
             ListElement {
               name: "Jacky"
               src: "http://placedog.net/200/200"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
             }
             ListElement {
               name: "Jacky"
               src: "http://placedog.net/150/150/b"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
             }
             ListElement {
               name: "Jacky"
               src: "http://placedog.net/300/300/invert"
+              content: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
             }
           }
 
@@ -125,11 +128,14 @@ ApplicationWindow {
 
             ColumnLayout {
               anchors.leftMargin: 8
+
               Text {
                 text: name
                 minimumPixelSize: 10
                 font.pixelSize: 16
                 font.bold: true
+                Layout.fillWidth: true
+                Layout.rightMargin: 8
                 horizontalAlignment: Text.AlignLeft
                 height: 24
               }
@@ -138,6 +144,9 @@ ApplicationWindow {
                 topPadding: 4
                 bottomPadding: 4
                 text: content
+                Layout.fillWidth: true
+                Layout.rightMargin: 8
+                Layout.fillHeight: true
                 wrapMode: Text.WrapAnywhere
               }
             }

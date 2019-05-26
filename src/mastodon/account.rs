@@ -37,16 +37,16 @@ impl Authenticator for Account {
         };
     }
 
-    fn network_type(&self) -> String {
-        "mastodon".into()
-    }
-
     fn resolve_user(&self) -> User {
         return self.into();
     }
 
+    fn network_type(&self) -> String {
+        "mastodon".into()
+    }
+
     fn generate_access_info(&self) -> Option<String> {
-        return serde_json::to_string(&self.api?.data).ok();
+        return serde_json::to_string(&self.api.as_ref()?.data).ok();
     }
 }
 
@@ -64,7 +64,10 @@ impl Builder for Account {
                     Ok(result) => {
                         let server_header = result.headers().get(header::SERVER).unwrap();
                         println!("Server header: {:?}", server_header);
-                        return server_header == "Mastodon";
+                        let header_matches = server_header == "Mastodon";
+
+                        let version_okay = true;
+                        return header_matches || version_okay;
                     }
                     _ => false,
                 };
@@ -95,19 +98,19 @@ impl Builder for Account {
 
 impl From<&Account> for User {
     fn from(account: &Account) -> User {
-        return match account.api {
-            Some(ref mastodon_api) => {
-                return match mastodon_api.verify_credentials() {
-                    Ok(mastodon_account) => {
-                            username: mastodon_account.acct,
-                            url: mastodon_account.url,
-                            service_url: account.instance_url.clone(),
-                            image_url: mastodon_account.avatar,
-                        };
-                    }
-                    _ => User::default(),
-                };
-            }
+        let masto_account = account
+            .api
+            .as_ref()
+            .expect("Failed to grab API handle for authenticated Mastodon user.")
+            .verify_credentials();
+
+        return match masto_account {
+            Ok(mastodon_account) => User {
+                username: mastodon_account.acct,
+                url: mastodon_account.url,
+                service_url: account.instance_url.clone(),
+                image_url: mastodon_account.avatar,
+            },
             _ => User::default(),
         };
     }
@@ -127,5 +130,4 @@ mod tests {
     fn builder_impl_supported_test_fails_if_not_visible() {
         assert!(!Account::supported("https://black.af/"));
     }
-}
 }
