@@ -9,8 +9,8 @@ desktop.
 ## Features
 
  * Sign into multiple platforms
-   * [ ] [Mastodon][] and Mastodon-compatible platforms ([Pleroma][])
-   * [ ] [IndieAuth][]-enabled sites
+   * [x] [Mastodon][] and Mastodon-compatible platforms ([Pleroma][])
+   * [x] [IndieAuth][]-enabled sites
  * Send posts
    * [ ] Notes
    * [ ] Articles
