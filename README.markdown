@@ -30,10 +30,21 @@ desktop.
   * [ ] Block profiles
   * [ ] Report profiles (Mastodon-compatible only)
 
+## Contributing
+
+You want to help out? _Awesome_! The project's mirrored on [GitHub][] and
+[invent.kde.org][]. Help around documentation, code, graphics and the like are
+_all_ welcome. Check out the project's [Code of Conduct][2].
+
+You can find the license (AGPLv3) of this project at [LICENSE](./LICENSE).
+
 [1]: https://activitydesk.black.af
+[2]: ./CODE_OF_CONDUCT.markdown
 [rust]: https://rustlang.org
 [qt]: https://qt.io
 [indieauth]: https://indieauth.com
 [mastodon]: https://joinmastodon.org
 [pleroma]: https://pleroma.social/
 [microsub]: https://indieweb.org/Microsub
+[invent.kde.org]: https://invent.kde.org/jalcine/activitydesk
+[github]: https://github.com/blackaf/activitydesk
