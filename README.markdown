@@ -30,6 +30,11 @@ desktop.
  * [ ] Block profiles
  * [ ] Report profiles (Mastodon-compatible only)
 
+## Dependencies
+
+ * Rust (1.32.0)
+ * Qt (5.12.0)
+
 ## Contributing
 
 You want to help out? _Awesome_! The project's mirrored on [GitHub][] and
