@@ -8,27 +8,27 @@ desktop.
 
 ## Features
 
-  * Sign into multiple platforms
+ * Sign into multiple platforms
    * [ ] [Mastodon][] and Mastodon-compatible platforms ([Pleroma][])
    * [ ] [IndieAuth][]-enabled sites
-  * Send posts
+ * Send posts
    * [ ] Notes
    * [ ] Articles
-  * Attach media to posts
+ * Attach media to posts
    * [ ] Photos
    * [ ] Videos
    * [ ] Audio
-  * Subscribe to the provided feeds of the platforms
+ * Subscribe to the provided feeds of the platforms
    * [ ] Home
    * [ ] Notifications
    * [ ] Federated Timeline
    * [ ] Local Timeline
    * [ ] Direct Messages
    * [ ] All channels available from [Microsub][]
-  * [ ] View remote profiles
-  * [ ] Mute profiles
-  * [ ] Block profiles
-  * [ ] Report profiles (Mastodon-compatible only)
+ * [ ] View remote profiles
+ * [ ] Mute profiles
+ * [ ] Block profiles
+ * [ ] Report profiles (Mastodon-compatible only)
 
 ## Contributing
 
