@@ -6,6 +6,7 @@ use std::collections::HashMap;
 pub fn extract_from_url(url: &str) -> HashMap<String, Vec<String>> {
     let client = http::client();
     let resp = client.get(url).send();
+    println!("extract_from_url: {:#?}", resp);
     return extract_from_resp(resp);
 }
 
@@ -20,10 +21,13 @@ pub fn extract_from_resp(resp: Result<Response>) -> HashMap<String, Vec<String>>
                     rels.insert(rel, value);
                 }
             }
-            rels.values_mut().map(|v| v).count();
+            println!("Got rels: {:#?}", rels);
             return rels;
         }
-        _ => HashMap::new(),
+        Err(err) => {
+            println!("Failed to fetch rel info for response: {:#?}", err);
+            HashMap::new()
+        }
     }
 }
 

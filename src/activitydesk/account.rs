@@ -44,6 +44,11 @@ impl Identity {
         let self_str = self.to_string().expect("Couldn't serialize this identity.");
         return set_secure(self.user.url.as_str(), self_str.as_str());
     }
+
+    pub fn find_from_url(url: &str) -> Option<Self> {
+        let idents = crate::activitydesk::settings::list_all_secure().unwrap_or(vec![]);
+        idents.iter().find(|id| id.user.url == url).cloned()
+    }
 }
 
 pub fn network_for(url: &str) -> Option<Box<Authenticator>> {

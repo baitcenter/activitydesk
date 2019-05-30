@@ -1,6 +1,7 @@
 use super::app;
-use crate::activitydesk::account::{Authenticator, Builder, User};
+use crate::activitydesk::account::*;
 use crate::activitydesk::get_base_domain;
+use crate::activitydesk::server;
 use elefren::http_send::HttpSender;
 use elefren::registration::{Registered, Registration};
 use elefren::{Mastodon, MastodonClient};
@@ -50,33 +51,42 @@ impl Authenticator for Account {
     }
 }
 
+fn check_endpoint(url: &str) -> bool {
+    match get_base_domain(url) {
+        Some(instance_host) => {
+            let instance_info_url: String = instance_host + "/api/v1/instance".into();
+            println!(
+                "Calling {:?} to get instance information...",
+                instance_info_url
+            );
+
+            return match reqwest::get(instance_info_url.as_str()) {
+                Ok(mut result) => {
+                    if result.status().is_success() {
+                        let resp_body = result.text().ok().expect("No body found.");
+                        let resp_json = json::parse(&resp_body.as_str())
+                            .ok()
+                            .expect("No JSON information");
+
+                        // TODO: Need to do a stricter check.
+                        !resp_json["version"].is_null()
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            };
+        }
+        _ => {
+            eprintln!("Couldn't resolve a legit domain for {:?}", url);
+            return false;
+        }
+    }
+}
+
 impl Builder for Account {
     fn supported(url: &str) -> bool {
-        match get_base_domain(url) {
-            Some(instance_host) => {
-                let instance_info_url: String = instance_host + "/api/v1/instance".into();
-                println!(
-                    "Calling {:?} to get instance information...",
-                    instance_info_url
-                );
-
-                return match reqwest::get(instance_info_url.as_str()) {
-                    Ok(result) => {
-                        let server_header = result.headers().get(header::SERVER).unwrap();
-                        println!("Server header: {:?}", server_header);
-                        let header_matches = server_header == "Mastodon";
-
-                        let version_okay = true;
-                        return header_matches || version_okay;
-                    }
-                    _ => false,
-                };
-            }
-            _ => {
-                eprintln!("Couldn't resolve a legit domain for {:?}", url);
-                return false;
-            }
-        }
+        return check_endpoint(url) || server::get_name(url).contains("Mastodon");
     }
 
     fn build_for(url: &str) -> Option<Box<Authenticator>> {
@@ -86,7 +96,7 @@ impl Builder for Account {
                 registration: Some(reg),
                 api: None,
                 access_token: None,
-                instance_url: instance_url,
+                instance_url,
             })),
             Err(err) => {
                 println!("Failed to register application: {:?}", err);
@@ -128,6 +138,6 @@ mod tests {
 
     #[test]
     fn builder_impl_supported_test_fails_if_not_visible() {
-        assert!(!Account::supported("https://black.af/"));
+        assert_eq!(Account::supported("https://black.af/"), false);
     }
 }

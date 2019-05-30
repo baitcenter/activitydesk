@@ -1,18 +1,24 @@
 import QtQuick 2.7
 import QtQuick.Controls 2.5
 import QtQuick.Controls.Styles 1.3
-import QtQuick.Layouts 1.5
+import QtQuick.Layouts 1.12
 import QtQuick.Window 2.7
+import Qt.labs.platform 1.1 as Platform
 import af.black.activitydesk.handlers 0.1
 import af.black.activitydesk.models 0.1
+import "qrc:/qml/Components" as Components
 
 ApplicationWindow {
-
   id: mainWindow
   visible: true
   width: 480
   height: 640
+  minimumWidth: 480
+  minimumHeight: 640
   title: qsTr("ActivityDesk")
+  property var composer: null
+  property var chooser: null
+  property var streams: []
 
   // TODO: Refactor this into a helper method.
   function addAccountMenuItem_clicked() {
@@ -20,65 +26,98 @@ ApplicationWindow {
     dialogKlass.createObject(mainWindow, {app_handler: handler, visible: true});
   }
 
+  function wipeAccountMenuItem_clicked() {
+    handler.wipe_it()
+  }
+
   MainWindowHandler {
     id: handler
+
+    onCurrent_identity_changed: function() {
+      composer.set_identity_url(handler.current_identity_url);
+    }
+
+    onPresent_new_stream: function(identity_url, stream_id) {
+      const item = streamView.push("qrc:/qml/Components/Stream.qml", {"identity_url": identity_url, "stream_kind": stream_id}, StackView.PushTransition);
+      streams.push(item);
+      streamBarRepeater.model = streams;
+    }
   }
 
-  IdentityList {
-    id: identityList
-  }
-
-  MenuBar {
+  Platform.MenuBar {
     id: menuBar
-    Menu {
+    Platform.Menu {
       title: "Account"
 
-      Action {
+      Platform.MenuItem {
         text: "Add"
         onTriggered: { addAccountMenuItem_clicked() }
       }
+
+      Platform.MenuItem {
+        text: "Wipe"
+        onTriggered: { wipeAccountMenuItem_clicked() }
+      }
     }
   }
 
-  ColumnLayout {
+  GridLayout {
     anchors.fill: parent
+    columns: 1
+    rows: 4
+    flow: GridLayout.TopToBottom
+    Layout.fillWidth: true
+    Layout.fillHeight: true
+    Layout.preferredWidth: parent.width
 
-    Component {
-      id: accountSelectorDelegate
-      ItemDelegate {
-        Layout.fillWidth: true
-        text: "(" + name + ") " + url
-        icon.name: "edit-copy"
+    Components.AccountChooser {
+      id: accountChooser
+      Layout.fillWidth: true
+      Layout.preferredHeight: 32
+
+      Component.onCompleted: {
+        this.selected.connect((uri) => {
+          handler.set_current_identity(uri);
+        });
       }
     }
 
-    ComboBox {
-      id: accountSelector
+    Components.Composer {
+      id: composer
       Layout.fillWidth: true
-      textRole: "name"
-      flat: true
-      model: identityList
-      delegate: accountSelectorDelegate
+      Layout.preferredHeight: 96
+      Layout.maximumHeight: 128
+      Layout.bottomMargin: 8
+      Component.onCompleted: function() {
+        handler.current_identity_changed.connect(() => {
+          composer.set_identity_url(handler.current_identity_url);
+        })
+      }
     }
 
     TabBar {
-      id: mainBar
+      id: streamBar
       Layout.fillWidth: true
+      Layout.preferredWidth: parent.width
 
-      TabButton {
-        text: qsTr("Home")
+      Repeater {
+        id: streamBarRepeater
+        model: mainWindow.streams
+
+        TabButton {
+          text: modelData.stream_kind + ":" + modelData.identity_url
+        }
       }
     }
 
-    StackLayout {
+    StackView {
+      id: streamView
       Layout.fillWidth: true
       Layout.fillHeight: true
-      currentIndex: mainBar.currentIndex
     }
   }
 
-
   Component.onCompleted: function() {
-    identityList.add_all_from_system();
+    handler.setup();
   }
 }

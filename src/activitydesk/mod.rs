@@ -1,7 +1,10 @@
 pub mod account;
 pub mod http;
+pub mod publisher;
 pub mod qt;
+pub mod server;
 pub mod settings;
+pub mod stream;
 
 pub fn get_base_domain(url: &str) -> Option<String> {
     let parsed_url = url::Url::parse(url);

@@ -1,4 +1,4 @@
-use crate::activitydesk::account::{Authenticator, Builder, User};
+use crate::activitydesk::account::*;
 use crate::activitydesk::http;
 use crate::indieweb::link_rel::extract_from_url;
 use reqwest::{StatusCode, Url};
@@ -8,7 +8,7 @@ use url::percent_encoding::percent_decode;
 use uuid::Uuid;
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-struct TokenEndpointResponse {
+pub struct TokenEndpointResponse {
     pub access_token: String,
     pub token_type: String,
     pub me: String,
@@ -29,7 +29,7 @@ impl Account {
     fn form_authorization_url(&self) -> Option<String> {
         let rels = extract_from_url(self.url.as_str());
         let endpoint = rels.get("authorization_endpoint".into())?.first().unwrap();
-        let scope_str = "read follow mute block channels";
+        let scope_str = "read create follow mute block channels";
         return match Url::parse_with_params(
             endpoint,
             [
@@ -119,6 +119,7 @@ impl Authenticator for Account {
 impl Builder for Account {
     fn supported(site_url: &str) -> bool {
         let rels = extract_from_url(site_url);
+        println!("IndieAuth::Account::supported: {:#?}", rels);
         return rels.contains_key("authorization_endpoint") & rels.contains_key("token_endpoint");
     }
 

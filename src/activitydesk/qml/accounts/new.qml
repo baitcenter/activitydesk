@@ -95,15 +95,6 @@ Window {
         horizontalAlignment: Text.AlignLeft
       }
 
-      ProgressBar {
-        id: progressWebView
-        Layout.fillWidth: true
-        visible: webView.loading
-        value: webView.loadProgress
-        from: 0
-        to: 100
-      }
-
       TextField {
         Layout.fillWidth: true
         id: fieldUrl
@@ -136,6 +127,16 @@ Window {
           }
         }
       }
+
+      ProgressBar {
+        id: progressWebView
+        Layout.fillWidth: true
+        visible: webView.loading
+        value: webView.loadProgress
+        from: 0
+        to: 100
+      }
+
     }
   }
 

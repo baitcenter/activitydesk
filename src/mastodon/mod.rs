@@ -1,5 +1,7 @@
 pub mod account;
 pub mod http;
+pub mod publisher;
+pub mod stream;
 
 use elefren::apps::{App, AppBuilder};
 use elefren::scopes::Scopes;
