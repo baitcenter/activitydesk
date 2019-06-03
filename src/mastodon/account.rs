@@ -5,7 +5,6 @@ use crate::activitydesk::server;
 use elefren::http_send::HttpSender;
 use elefren::registration::{Registered, Registration};
 use elefren::{Mastodon, MastodonClient};
-use reqwest::header;
 
 #[derive(Default)]
 pub struct Account {

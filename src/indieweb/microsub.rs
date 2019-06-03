@@ -7,6 +7,7 @@ pub struct Sink {
 }
 
 impl stream::Sink for Sink {
+    fn add_receiver(&mut self, _cb: Box<stream::ReceiveCallback>) {}
     fn identity(&self) -> Identity {
         self.identity.clone()
     }
@@ -22,8 +23,12 @@ impl stream::Sink for Sink {
     fn stop(&mut self) -> bool {
         false
     }
-    fn get_post_by_index(&self, index: i32) -> Option<Box<stream::Post>> { None }
-    fn posts(&self) -> Vec<Box<stream::Post>> { vec![] }
+    fn get_post_by_index(&self, _index: i32) -> Option<Box<stream::Post>> {
+        None
+    }
+    fn posts(&self) -> Vec<Box<stream::Post>> {
+        vec![]
+    }
 }
 
 impl stream::Builder for Sink {

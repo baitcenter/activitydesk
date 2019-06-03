@@ -1,6 +1,5 @@
 use crate::activitydesk::account::Identity;
 use crate::activitydesk::stream::get_all_sinks;
-use crate::activitydesk::stream::Sink;
 use qmetaobject::*;
 
 #[derive(Default, QObject)]

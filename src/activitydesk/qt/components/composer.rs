@@ -1,4 +1,3 @@
-use crate::activitydesk::account::Identity;
 use crate::activitydesk::publisher;
 use crate::activitydesk::qt::models;
 use qmetaobject::*;

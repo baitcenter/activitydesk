@@ -55,6 +55,7 @@ pub fn wipe() {
     }
 }
 
+// TODO: Rename this to be specific to identities - misleading name.
 pub fn list_all_secure() -> Option<Vec<Identity>> {
     match service()
         .get_default_collection()

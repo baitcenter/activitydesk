@@ -15,6 +15,10 @@ impl Inst {
         Self { engine }
     }
 }
+pub fn start() {
+    let mut inst = setup();
+    run(&mut inst);
+}
 
 pub fn setup() -> Inst {
     register_qml_types();
@@ -63,5 +67,4 @@ fn register_qml_types() {
         1,
         cstr!("StreamList"),
     );
-
 }

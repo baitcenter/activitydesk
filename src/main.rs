@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate hyper;
 extern crate secret_service;
 
@@ -25,6 +24,5 @@ qrc! {
 fn main() {
     qml_resources();
     activitydesk::init();
-    let mut qt = activitydesk::qt::core::setup();
-    activitydesk::qt::core::run(&mut qt);
+    activitydesk::qt::core::start();
 }
