@@ -1,4 +1,4 @@
-import QtQuick 2.12
+import QtQuick 2.0
 import af.black.activitydesk.models 0.1
 import af.black.activitydesk.handlers 0.1
 import "qrc:/qml/Components" as Components

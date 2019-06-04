@@ -1,8 +1,8 @@
 // TODO: Extend the Tumbler element to show a list of entries.
 // TODO: Emit event when an account is selected.
 // TODO: On construction, request loading of all known accounts.
-import QtQuick 2.7
-import QtQuick.Controls 2.5
+import QtQuick 2.0
+import QtQuick.Controls 2.0
 import af.black.activitydesk.models 0.1
 
 ComboBox {

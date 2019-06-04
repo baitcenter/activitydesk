@@ -1,7 +1,7 @@
-import QtQuick 2.7
+import QtQuick 2.5
 import QtQuick.Controls 2.5
-import QtQuick.Window 2.12
-import QtQuick.Dialogs 1.3
+import QtQuick.Controls.Styles 1.0
+import QtQuick.Window 2.2
 import QtQuick.Layouts 1.12
 import QtWebKit 3.0
 import af.black.activitydesk.handlers 0.1

@@ -6,6 +6,8 @@ use elefren::errors::Error;
 use elefren::http_send::HttpSender;
 use elefren::prelude::*;
 use futures::future::lazy;
+use futures::future::IntoFuture;
+use futures::stream::Stream;
 use std::cell::RefCell;
 use tokio::runtime::current_thread::Runtime as CurrentRuntime;
 use tokio::runtime::Runtime;
@@ -46,9 +48,7 @@ impl Streamer {
                 );
                 eprintln!("Failed to send post upstream: {:#?}", err.into_inner());
             }
-            _ => {
-                println!("Captured {:#?} post: {:#?}", self.kind, post);
-            }
+            _ => {}
         }
     }
 
@@ -76,7 +76,8 @@ impl Streamer {
                 }
             }
         };
-        println!("Fetched.");
+
+        println!("Fetched a new stream: {:#?}", result);
         result
     }
 }
@@ -97,11 +98,13 @@ impl Sink {
         let streamer = self.streamer.as_ref().unwrap().clone();
 
         runner.spawn(lazy(move || {
+            println!("Starting listening to stream.");
             match streamer.borrow().get() {
                 Ok(stream) => {
                     for event in stream {
                         let result = match event {
                             Event::Update(status) => Some(build_post(identity.clone(), status)),
+                            Event::Notification(_notif) => None,
                             _ => None,
                         };
                         streamer.borrow().send(result);
@@ -110,6 +113,7 @@ impl Sink {
                 _ => {}
             };
 
+            println!("End listening to stream.");
             Ok(())
         }));
 
@@ -121,14 +125,18 @@ impl Sink {
     }
 
     fn begin_receiving(&mut self) {
-        match self.receiver.as_ref() {
-            Some(_rx) => {
-                self.current_runner.as_mut().unwrap().spawn(lazy(|| {
-                    println!("About to hit it.");
-                    Ok(())
-                }));
-                self.receivers.iter_mut().for_each(|cb| cb.invoke(None));
-                println!("Notified {:#} receivers.", self.receivers.len());
+        match &mut self.receiver {
+            Some(rx) => {
+                let ft = rx
+                    .as_mut()
+                    .for_each(move |post: Option<stream::Post>| {
+                        println!("Post: {:#?}", post);
+                        Ok(())
+                    })
+                    .into_future();
+                // self.current_runner.unwrap().spawn(ft);
+                // self.current_runner.as_ref().unwrap().run();
+                println!("{:#?}", self.current_runner);
             }
             _ => {}
         }
@@ -171,10 +179,7 @@ impl stream::Sink for Sink {
 
     fn posts(&self) -> Vec<Box<stream::Post>> {
         println!("Get all of the post for {:#?}", self.kind());
-        match self.receiver {
-            None => vec![],
-            Some(_) => vec![],
-        }
+        vec![]
     }
 }
 

@@ -26,6 +26,7 @@ desktop.
    * [ ] Direct Messages
    * [ ] All channels available from [Microsub][]
  * [ ] View remote profiles
+ * [ ] Cache remote information
  * [ ] Mute profiles
  * [ ] Block profiles
  * [ ] Report profiles (Mastodon-compatible only)

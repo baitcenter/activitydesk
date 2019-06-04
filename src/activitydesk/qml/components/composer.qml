@@ -1,6 +1,6 @@
-import QtQml 2.12
-import QtQuick 2.7
-import QtQuick.Controls 2.12
+import QtQml 2.0
+import QtQuick 2.0
+import QtQuick.Controls 2.5
 import QtQuick.Layouts 1.5
 import af.black.activitydesk.models 0.1
 import af.black.activitydesk.handlers 0.1
