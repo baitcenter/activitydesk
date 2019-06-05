@@ -112,7 +112,7 @@ impl List {
             })
             .collect();
         let end = self.identities.len() as i32;
-        (self as &mut QAbstractListModel).begin_insert_rows(0, end - 1);
-        (self as &mut QAbstractListModel).end_insert_rows();
+        QAbstractListModel::begin_insert_rows(self, 0, end - 1);
+        QAbstractListModel::end_insert_rows(self);
     }
 }

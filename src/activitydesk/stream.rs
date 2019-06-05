@@ -1,8 +1,8 @@
 use crate::activitydesk::account::Identity;
 use crate::indieweb::microsub as Microsub;
 use crate::mastodon::stream as Mastodon;
-use futures::sync::mpsc::{channel, Receiver, Sender};
 use serde::{Deserialize, Serialize};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Post {
@@ -25,25 +25,14 @@ impl From<String> for Post {
     }
 }
 
-pub struct ReceiveCallback {
-    pub callback: Box<FnMut(Option<Post>)>,
-}
-
-impl ReceiveCallback {
-    pub fn invoke(&mut self, post: Option<Post>) {
-        (self.callback)(post.clone());
-    }
-}
-
 pub trait Sink {
     fn name(&self) -> String;
     fn start(&mut self) -> bool;
     fn stop(&mut self) -> bool;
     fn kind(&self) -> String;
     fn identity(&self) -> Identity;
-    fn get_post_by_index(&self, index: i32) -> Option<Box<Post>>;
-    fn posts(&self) -> Vec<Box<Post>>;
-    fn add_receiver(&mut self, cb: Box<ReceiveCallback>);
+    fn get_post_by_index(&self, index: i32) -> Option<Post>;
+    fn posts(&self) -> Vec<Post>;
 }
 
 pub trait Builder {
@@ -55,7 +44,7 @@ pub type ChannelReceiver = Receiver<Option<Post>>;
 pub type ChannelSender = Sender<Option<Post>>;
 
 pub fn get_transfer() -> (ChannelSender, ChannelReceiver) {
-    channel(1024)
+    channel()
 }
 
 pub fn get_all_sinks() -> Vec<Option<Box<Sink>>> {

@@ -6,10 +6,9 @@ use elefren::errors::Error;
 use elefren::http_send::HttpSender;
 use elefren::prelude::*;
 use futures::future::lazy;
-use futures::future::IntoFuture;
-use futures::stream::Stream;
 use std::cell::RefCell;
-use tokio::runtime::current_thread::Runtime as CurrentRuntime;
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -23,10 +22,10 @@ pub struct Sink {
     pub identity: Identity,
     pub kind: String,
     runner: Option<Runtime>,
-    current_runner: Option<CurrentRuntime>,
     streamer: Option<RefCell<Streamer>>,
-    receiver: Option<Box<stream::ChannelReceiver>>,
-    receivers: Vec<Box<stream::ReceiveCallback>>,
+    receiver: Option<Arc<Mutex<stream::ChannelReceiver>>>,
+    recv_thread: Option<std::thread::JoinHandle<()>>,
+    backlog: Arc<Mutex<Vec<stream::Post>>>,
 }
 
 impl Streamer {
@@ -38,16 +37,8 @@ impl Streamer {
     }
 
     pub fn send(&self, post: Option<stream::Post>) {
-        match self.sender.borrow_mut().try_send(post.clone()) {
-            Err(err) => {
-                eprintln!(
-                    "Failed to send post {:#?} upstream: Closed? {:#?} Full? {:#?}",
-                    post,
-                    err.is_disconnected(),
-                    err.is_full()
-                );
-                eprintln!("Failed to send post upstream: {:#?}", err.into_inner());
-            }
+        match self.sender.borrow_mut().send(post.clone()) {
+            Err(err) => eprintln!("Failed to send post upstream: {:#?}", err),
             _ => {}
         }
     }
@@ -60,7 +51,6 @@ impl Streamer {
             "timeline:home" => app.streaming_user(),
             "timeline:public" => app.streaming_public(),
             "timeline:local" => app.streaming_local(),
-            "timeline:direct" => app.streaming_direct(),
             kind => {
                 if kind.starts_with("hashtag:public:") {
                     let (hashtag, _) = kind.split_at("hashtag:public:".len());
@@ -80,6 +70,32 @@ impl Streamer {
         println!("Fetched a new stream: {:#?}", result);
         result
     }
+
+    pub fn populate(&self) {
+        let app = self.app();
+        println!("Backfilling feed...");
+        let statuses = match self.kind.as_str() {
+            "timeline:home" => match app.get_home_timeline() {
+                Err(_) => vec![],
+                Ok(page) => page.items_iter().collect(),
+            },
+            "timeline:public" => match app.get_public_timeline(false) {
+                Err(_) => vec![],
+                Ok(items) => items,
+            },
+            "timeline:local" => match app.get_public_timeline(true) {
+                Err(_) => vec![],
+                Ok(items) => items,
+            },
+            _ => vec![],
+        };
+
+        println!("Backfilling {:#} items.", statuses.len());
+
+        statuses.iter().for_each(|status| {
+            self.send(Some(build_post(&self.identity, status)));
+        });
+    }
 }
 
 impl Sink {
@@ -89,31 +105,35 @@ impl Sink {
         let identity = self.identity.clone();
         let mut runner = Runtime::new().ok()?;
 
-        self.receiver = Some(Box::new(receiver));
+        self.receiver = Some(Arc::new(Mutex::new(receiver)));
         self.streamer = Some(RefCell::new(Streamer {
             identity: identity.clone(),
             kind: self.kind.clone(),
             sender: RefCell::new(sender.clone()),
         }));
-        let streamer = self.streamer.as_ref().unwrap().clone();
 
+        let streamer_backfill = self.streamer.as_ref().unwrap().clone();
         runner.spawn(lazy(move || {
-            println!("Starting listening to stream.");
-            match streamer.borrow().get() {
+            streamer_backfill.borrow().populate();
+            Ok(())
+        }));
+
+        let streamer_stream = self.streamer.as_ref().unwrap().clone();
+        runner.spawn(lazy(move || {
+            match streamer_stream.borrow().get() {
                 Ok(stream) => {
                     for event in stream {
                         let result = match event {
-                            Event::Update(status) => Some(build_post(identity.clone(), status)),
+                            Event::Update(status) => Some(build_post(&identity, &status)),
                             Event::Notification(_notif) => None,
                             _ => None,
                         };
-                        streamer.borrow().send(result);
+                        streamer_stream.borrow().send(result);
                     }
                 }
                 _ => {}
             };
-
-            println!("End listening to stream.");
+            println!("Stopped streaming.");
             Ok(())
         }));
 
@@ -125,29 +145,40 @@ impl Sink {
     }
 
     fn begin_receiving(&mut self) {
-        match &mut self.receiver {
-            Some(rx) => {
-                let ft = rx
-                    .as_mut()
-                    .for_each(move |post: Option<stream::Post>| {
-                        println!("Post: {:#?}", post);
-                        Ok(())
-                    })
-                    .into_future();
-                // self.current_runner.unwrap().spawn(ft);
-                // self.current_runner.as_ref().unwrap().run();
-                println!("{:#?}", self.current_runner);
+        println!("Beginning to listen to responses from receiver.");
+        match &self.receiver {
+            None => {
+                println!("No receiver to listen on.");
             }
-            _ => {}
+            Some(rx) => {
+                let mutex = rx.clone();
+                let backlog_mutex = self.backlog.clone();
+
+                let builder = std::thread::Builder::new()
+                    .name(format!("{:#?}:{:#?}", self.identity.network_type, self.kind).into());
+
+                self.recv_thread = builder
+                    .spawn(move || {
+                        mutex.lock().unwrap().deref_mut().iter().for_each(
+                            move |post: Option<stream::Post>| {
+                                match backlog_mutex.lock() {
+                                    Ok(mut mtx) => {
+                                        if post.is_some() {
+                                            mtx.push(post.clone().unwrap());
+                                        }
+                                    }
+                                    Err(_) => {}
+                                };
+                            },
+                        );
+                    })
+                    .ok();
+            }
         }
     }
 }
 
 impl stream::Sink for Sink {
-    fn add_receiver(&mut self, cb: Box<stream::ReceiveCallback>) {
-        self.receivers.push(cb);
-    }
-
     fn identity(&self) -> Identity {
         self.identity.clone()
     }
@@ -161,11 +192,9 @@ impl stream::Sink for Sink {
     }
 
     fn start(&mut self) -> bool {
-        println!("Building stream {:#?}", self.kind());
-        self.current_runner = CurrentRuntime::new().ok();
         self.runner = (self as &mut Sink).build_stream();
-        println!("Built stream runner for Mastodon/{:#?}", self.kind());
         (self as &mut Sink).begin_receiving();
+
         self.runner.is_some()
     }
 
@@ -173,48 +202,59 @@ impl stream::Sink for Sink {
         false
     }
 
-    fn get_post_by_index(&self, _index: i32) -> Option<Box<stream::Post>> {
-        None
+    fn get_post_by_index(&self, index: i32) -> Option<stream::Post> {
+        self.backlog
+            .try_lock()
+            .ok()?
+            .deref()
+            .clone()
+            .get(index as usize)
+            .map(|post| post.clone())
     }
 
-    fn posts(&self) -> Vec<Box<stream::Post>> {
-        println!("Get all of the post for {:#?}", self.kind());
-        vec![]
+    fn posts(&self) -> Vec<stream::Post> {
+        println!("Getting all of the post for {:#?}", self.kind());
+
+        match self.backlog.try_lock() {
+            Ok(posts) => {
+                println!("Got {:#?} posts for {:#?}", posts.len(), self.kind());
+                posts.deref().clone()
+            }
+            Err(err) => {
+                println!("Couldn't lock backlog: {:#?}", err);
+                vec![]
+            }
+        }
     }
 }
 
 impl stream::Builder for Sink {
     fn build_all(identity: &Identity) -> Vec<Option<Box<stream::Sink>>> {
-        [
-            "timeline:home",
-            "timeline:public",
-            "timeline:local",
-            "timeline:direct",
-        ]
-        .iter()
-        .map(|feed| Self::build(identity, feed))
-        .collect()
+        ["timeline:home", "timeline:public"]
+            .iter()
+            .map(|feed| Self::build(identity, feed))
+            .collect()
     }
 
     fn build(identity: &Identity, kind: &str) -> Option<Box<stream::Sink>> {
         Some(Box::new(Sink {
             identity: identity.clone(),
             kind: kind.into(),
-            current_runner: None,
+            recv_thread: None,
+            backlog: Arc::new(Mutex::new(vec![])),
             runner: None,
             streamer: None,
             receiver: None,
-            receivers: vec![],
         }))
     }
 }
 
-fn build_post(identity: Identity, status: Status) -> stream::Post {
+fn build_post(identity: &Identity, status: &Status) -> stream::Post {
     stream::Post {
         body: status.content.clone(),
         displayed_name: status.account.display_name.clone(),
         url: status.url.clone().unwrap_or(status.uri.clone()),
         avatar_image_url: status.account.avatar.clone(),
-        identity,
+        identity: identity.clone(),
     }
 }

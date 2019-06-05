@@ -35,6 +35,7 @@ desktop.
 
  * Rust (1.32.0)
  * Qt (5.12.0)
+   * Qt WebKit
 
 ## Contributing
 

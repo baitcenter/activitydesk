@@ -14,7 +14,7 @@ Qt5WebKit = "5.0"
 
 [dependencies]
 cstr = "0.1.7"
-elefren = "0.20.0"
+elefren = "0.20.1"
 hyper = "0.12.29"
 json = "0.11.13"
 libc = "0.2.55"

@@ -3,28 +3,35 @@ import QtQuick.Controls 2.0
 import QtQuick 2.0
 import QtGraphicalEffects 1.12
 
-RowLayout {
-  anchors.fill: parent
+GridLayout {
+  property string displayed_name: "Jacky Alcine"
+  property string avatar_image_url: "https://placedog.net/96"
+  property string content: "Waiting to get this ready."
+  id: parent
   Layout.fillWidth: true
-  Layout.fillHeight: true
   Layout.margins: 4
   Layout.minimumHeight: 108
   Layout.minimumWidth: 512
-  width: 512
-  height: 108
+  Layout.preferredWidth: 512
+  Layout.preferredHeight: 108
+  rows: 2
+  columns: 2
 
   Item {
     Layout.maximumWidth: 64
     Layout.minimumWidth: 48
     Layout.leftMargin: 8
     Layout.topMargin: 4
+    Layout.rowSpan: 2
+    Layout.row: 0
+    Layout.column: 0
     width: 64
     height: 64
     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
 
     Image {
       id: avatar
-      source: "https://placedog.net/96"
+      source: parent.avatar_image_url
       sourceSize.height: 64
       height: 64
       fillMode: Image.PreserveAspectCrop
@@ -73,31 +80,33 @@ RowLayout {
     }
   }
 
-  ColumnLayout {
+  Text {
+    Layout.row: 0
+    Layout.column: 1
+    Layout.alignment: Qt.AlignTop | Qt.AlignRight
+    Layout.margins: 4
+    Layout.bottomMargin: 2
+    Layout.fillWidth: true
+    text: parent.displayed_name
+    font.weight: Font.Bold
+  }
+
+  Label {
+    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
     Layout.fillWidth: true
     Layout.fillHeight: true
-    Layout.leftMargin: 8
-    Layout.rightMargin: 8
-    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-
-    Text {
-      Layout.alignment: Qt.AlignTop | Qt.AlignRight
-      Layout.topMargin: 4
-      Layout.fillWidth: true
-      text: "Jacky Alcine"
-      font.weight: Font.Bold
-    }
-
-    Label {
-      Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-      Layout.fillWidth: true
-      wrapMode: Text.WordWrap
-      text: "I'm just testing out having posts here."
-      padding: 8
-      background: Rectangle {
-        color: "#99BCBCBC"
-        radius: 2
-      }
+    Layout.margins: 4
+    Layout.topMargin: 2
+    Layout.row: 1
+    Layout.column: 1
+    rightInset: 4
+    wrapMode: Text.WordWrap
+    text: parent.content
+    clip: true
+    padding: 6
+    background: Rectangle {
+      color: "#99BCBCBC"
+      radius: 2
     }
   }
 }

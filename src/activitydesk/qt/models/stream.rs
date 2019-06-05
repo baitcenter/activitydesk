@@ -6,6 +6,8 @@ use std::collections::HashMap;
 const ITEM_ROLE_DISPLAYED_NAME: i32 = USER_ROLE;
 const ITEM_ROLE_AVATAR_IMAGE_URL: i32 = USER_ROLE + 1;
 const ITEM_ROLE_PROFILE_URL: i32 = USER_ROLE + 2;
+const ITEM_ROLE_CONTENT: i32 = USER_ROLE + 3;
+const ITEM_ROLE_URL: i32 = USER_ROLE + 4;
 
 #[derive(Default, Clone, Debug, QGadget)]
 pub struct Model {}
@@ -20,6 +22,7 @@ pub struct Delegate {
     stop: qt_method!(fn(&mut self)),
     title: qt_method!(fn(&self) -> QString),
     sink: Option<Box<stream::Sink>>,
+    polling_thread: Option<std::thread::JoinHandle<()>>,
 }
 
 impl QAbstractListModel for Delegate {
@@ -32,6 +35,9 @@ impl QAbstractListModel for Delegate {
         map.insert(ITEM_ROLE_DISPLAYED_NAME.into(), "displayed_name".into());
         map.insert(ITEM_ROLE_AVATAR_IMAGE_URL.into(), "avatar_image_url".into());
         map.insert(ITEM_ROLE_PROFILE_URL.into(), "profile_url".into());
+        map.insert(ITEM_ROLE_CONTENT.into(), "content".into());
+        map.insert(ITEM_ROLE_URL.into(), "url".into());
+        println!("{:#?}", map.clone());
         map
     }
 
@@ -48,14 +54,7 @@ impl Delegate {
         match &mut self.sink {
             Some(sink) => {
                 println!("Starting stream {:#?}.", sink.kind());
-                if sink.start() {
-                    println!("Stream {:#?} began.", sink.kind());
-                    sink.add_receiver(Box::new(stream::ReceiveCallback {
-                        callback: Box::new(|post: Option<stream::Post>| println!("{:#?}", post)),
-                    }));
-                } else {
-                    eprintln!("Stream {:#?} failed.", sink.kind());
-                }
+                sink.start();
             }
             _ => {}
         };
@@ -78,28 +77,63 @@ impl Delegate {
     }
 
     fn get_count_of_posts(&self) -> i32 {
-        match &self.sink {
+        let count = match &self.sink {
             Some(sink) => sink.posts().len() as i32,
             _ => 0,
-        }
+        };
+        println!("Computed {:#?} available posts.", count);
+        count
     }
 
     fn get_field_for_post(&self, index: i32, role: i32) -> Option<QVariant> {
         match &self.sink {
             Some(sink) => {
-                let post = sink.get_post_by_index(index)?;
-                Some(
-                    QString::from(match role {
-                        ITEM_ROLE_DISPLAYED_NAME => post.displayed_name,
-                        ITEM_ROLE_AVATAR_IMAGE_URL => post.avatar_image_url,
-                        ITEM_ROLE_PROFILE_URL => post.url,
-                        _ => String::default(),
-                    })
-                    .into(),
-                )
+                let post = sink.get_post_by_index(index)?.clone();
+                let value = match role {
+                    ITEM_ROLE_DISPLAYED_NAME => post.clone().displayed_name,
+                    ITEM_ROLE_AVATAR_IMAGE_URL => post.clone().avatar_image_url,
+                    ITEM_ROLE_PROFILE_URL => post.clone().identity.user.url,
+                    ITEM_ROLE_CONTENT => post.clone().body,
+                    ITEM_ROLE_URL => post.clone().url,
+                    _ => String::default(),
+                };
+                println!("Showing {:#?} for {:#?}", value.clone(), post.clone());
+                Some(QString::from(value).into())
             }
             _ => None,
         }
+    }
+
+    fn inflate(&mut self, posts: Vec<stream::Post>) {
+        let count = posts.len() as i32;
+        QAbstractListModel::begin_reset_model(self);
+        QAbstractListModel::begin_insert_rows(self, 0, count);
+        QAbstractListModel::end_insert_rows(self);
+        QAbstractListModel::end_reset_model(self);
+        println!("{:#} posts rendered.", count);
+    }
+
+    fn begin_polling(&mut self) {
+        let posts = match &self.sink {
+            Some(sink) => sink.posts(),
+            _ => vec![],
+        };
+        self.inflate(posts);
+
+        let qptr = QPointer::from(&*self);
+        let cb = qmetaobject::queued_callback(move |_: ()| {
+            qptr.as_pinned().map(|d_ptr| {
+                let mut d = d_ptr.borrow_mut();
+                d.begin_polling();
+            });
+        });
+
+        let title = self.title().clone();
+        self.polling_thread = Some(std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::new(15, 0));
+            println!("Checking for more items in 3 seconds for {:#?}...", title);
+            cb(());
+        }));
     }
 
     fn set_stream(&mut self, identity_url: String, stream_kind: String) -> bool {
@@ -112,6 +146,10 @@ impl Delegate {
             }
             _ => {}
         }
+
+        QAbstractListModel::begin_reset_model(self);
+        self.begin_polling();
+        QAbstractListModel::end_reset_model(self);
 
         self.sink.is_some()
     }

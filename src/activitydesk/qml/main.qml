@@ -30,6 +30,11 @@ ApplicationWindow {
     handler.wipe_it()
   }
 
+  Component {
+    id: newStreamView
+    Components.Stream {}
+  }
+
   MainWindowHandler {
     id: handler
 
@@ -38,8 +43,10 @@ ApplicationWindow {
     }
 
     onPresent_new_stream: function(identity_url, stream_id) {
-      const item = streamView.push("qrc:/qml/Components/Stream.qml", {"identity_url": identity_url, "stream_kind": stream_id}, StackView.PushTransition);
-      streams.push(item);
+      const stream_data = {"identity_url": identity_url, "stream_kind": stream_id};
+      const new_view = newStreamView.createObject(null, stream_data);
+      streamView.addItem(new_view);
+      streams.push(stream_data);
       streamBarRepeater.model = streams;
     }
   }
@@ -110,8 +117,9 @@ ApplicationWindow {
       }
     }
 
-    StackView {
+    SwipeView {
       id: streamView
+      currentIndex: streamBar.currentIndex
       Layout.fillWidth: true
       Layout.fillHeight: true
     }
