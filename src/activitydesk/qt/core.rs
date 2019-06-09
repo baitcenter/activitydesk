@@ -22,12 +22,15 @@ pub fn start() {
 
 pub fn setup() -> Inst {
     register_qml_types();
+    register_desktop_handlers();
     return Inst::new();
 }
 
 pub fn run(inst: &mut Inst) {
     inst.engine.exec();
 }
+
+fn register_desktop_handlers() {}
 
 fn register_qml_types() {
     qml_register_type::<qt::views::new_account_dialog::Handler>(

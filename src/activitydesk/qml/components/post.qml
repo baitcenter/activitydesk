@@ -1,5 +1,5 @@
 import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.5
 import QtQuick 2.0
 import QtGraphicalEffects 1.12
 
@@ -18,22 +18,23 @@ GridLayout {
   columns: 2
 
   Item {
-    Layout.maximumWidth: 64
+    id: icon
+    Layout.maximumWidth: 48
     Layout.minimumWidth: 48
     Layout.leftMargin: 8
     Layout.topMargin: 4
     Layout.rowSpan: 2
     Layout.row: 0
     Layout.column: 0
-    width: 64
-    height: 64
+    width: 48
+    height: 48
     Layout.alignment: Qt.AlignTop | Qt.AlignLeft
 
     Image {
       id: avatar
       source: parent.avatar_image_url
-      sourceSize.height: 64
-      height: 64
+      sourceSize.height: 48
+      height: 48
       fillMode: Image.PreserveAspectCrop
       Layout.rightMargin: 0
       z: -1
@@ -54,12 +55,12 @@ GridLayout {
 
     Image {
       id: platformLogo
-      source: "https://placedog.net/32"
-      Layout.maximumWidth: 24
+      source: "https://placedog.net/16"
+      Layout.maximumWidth: 16
       fillMode: Image.PreserveAspectCrop
-      sourceSize.width: 24
-      width: 24
-      height: 24
+      sourceSize.width: 16
+      width: 16
+      height: 16
       x: (Math.min(avatar.width, avatar.height) - width)
       y: (Math.min(avatar.width, avatar.height) - height)
       layer.enabled: true
@@ -83,7 +84,7 @@ GridLayout {
   Text {
     Layout.row: 0
     Layout.column: 1
-    Layout.alignment: Qt.AlignTop | Qt.AlignRight
+    Layout.alignment: Qt.AlignTop | Qt.AlignLeft
     Layout.margins: 4
     Layout.bottomMargin: 2
     Layout.fillWidth: true
@@ -99,11 +100,11 @@ GridLayout {
     Layout.topMargin: 2
     Layout.row: 1
     Layout.column: 1
-    rightInset: 4
-    wrapMode: Text.WordWrap
+    wrapMode: Text.WrapAnywhere
+    width: parent.width - icon.width
+    textFormat: Text.RichText
     text: parent.content
-    clip: true
-    padding: 6
+    padding: 4
     background: Rectangle {
       color: "#99BCBCBC"
       radius: 2

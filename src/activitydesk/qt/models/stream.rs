@@ -130,8 +130,8 @@ impl Delegate {
 
         let title = self.title().clone();
         self.polling_thread = Some(std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::new(15, 0));
-            println!("Checking for more items in 3 seconds for {:#?}...", title);
+            std::thread::sleep(std::time::Duration::new(10, 0));
+            println!("Will check for more items in 10 seconds for {:#?}.", title);
             cb(());
         }));
     }

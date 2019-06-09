@@ -3,21 +3,21 @@ import QtQuick.Controls 2.5
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Window 2.2
 import QtQuick.Layouts 1.12
-import QtWebKit 3.0
 import af.black.activitydesk.handlers 0.1
 
 Window {
   id: accountNewDialog
   title: qsTr("Add New Account - ActivityDesk")
   visible: true
-  width: 640
-  height: 480
+  width: 320
+  height: 240
   modality: Qt.ApplicationModal
   flags: Qt.Sheet
-  property var profile_image_url: ""
-  property var profile_url: ""
-  property var app_handler: Null
+  property string profile_image_url: ""
+  property string profile_url: ""
+  property string authorization_code: ""
   property url authorization_url: ""
+  property var app_handler: Null
 
   NewAccountDialogHandler {
     id: handler
@@ -35,7 +35,7 @@ Window {
 
     ColumnLayout {
       Text {
-        text: "Enter your profile URI"
+        text: "Enter your profile URI."
         Layout.fillWidth: true
         fontSizeMode: Text.Fit
         minimumPixelSize: 10
@@ -44,10 +44,9 @@ Window {
       }
 
       Text {
-        text: "The URI can be the instance of Pleroma/Mastodon/PixelFed or your IndieWeb site. ActivityDesk will attempt to figure out what platform/network you're using."
+        text: "The URI can be the instance of your Mastodon or your IndieWeb site. ActivityDesk will figure out what platform/network you're using."
         Layout.fillWidth: true
         Layout.fillHeight: true
-        padding: 16
         wrapMode: Text.Wrap
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignTop
@@ -64,6 +63,7 @@ Window {
 
         Button {
           text: "Continue"
+          id: buttonContinue
           onClicked: {
             const profileUrl = textFieldProfileURL.text;
             handler.prepare_account_for(profileUrl);
@@ -95,48 +95,61 @@ Window {
         horizontalAlignment: Text.AlignLeft
       }
 
-      TextField {
-        Layout.fillWidth: true
-        id: fieldUrl
-        readOnly: true
-        text: webView.url
-      }
-
-      WebView {
-        id: webView
+      Text {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        url: authorization_url
-        onLoadingChanged: function(request) {
-          if (request.status == WebView.LoadSucceededStatus && request.url.toString().includes("code=")) {
-            const code_part = request.url.toString().split("code=")[1].split("&")[0]
-            handler.obtain_token(code_part);
-            authorization_url = "about:blank"
+        text: "A browser window will be launhed in a few moments. Once that happens, be sure to either collect the code and enter it into the field below."
+        wrapMode: Text.Wrap
+        horizontalAlignment: Text.AlignLeft
+        verticalAlignment: Text.AlignTop
+      }
+
+      RowLayout {
+        id: codeConfirmationLayout
+        visible: false
+
+        TextField {
+          id: textFieldCode
+          Layout.fillWidth: true
+          font.family: "monospace"
+        }
+
+        Button {
+          text: "Confirm Code"
+          onClicked: function() {
+            handler.obtain_token(textFieldCode.text);
 
             if (handler.has_token() && handler.resolve_user()) {
               console.log(handler.user_image_url);
-              profile_url =  handler.user_url;
+              profile_url = handler.user_url;
               profile_image_url = handler.user_image_url;
               stack.replace(viewShowProfile);
             } else {
               stack.replace(viewCodeFailed);
+              codeConfirmationLayout.visible = false
             }
-
-          } else {
-            console.log(request.url)
           }
         }
       }
 
-      ProgressBar {
-        id: progressWebView
-        Layout.fillWidth: true
-        visible: webView.loading
-        value: webView.loadProgress
-        from: 0
-        to: 100
-      }
+      RowLayout {
+        id: launchBrowserLayout
+        visible: !codeConfirmationLayout.visible
 
+        TextField {
+          Layout.fillWidth: true
+          text: accountNewDialog.authorization_url
+          readOnly: true
+          enabled: false
+        }
+
+        Button {
+          text: "Launch"
+          onClicked: function() {
+            codeConfirmationLayout.visible = Qt.openUrlExternally(accountNewDialog.authorization_url);
+          }
+        }
+      }
     }
   }
 

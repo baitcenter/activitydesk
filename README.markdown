@@ -6,14 +6,22 @@
 that provides a means of interacting with the social Web from your personal
 desktop.
 
+![Screenshot of ActivityDesk on Kubuntu](./preview.png)
+
 ## Features
 
  * Sign into multiple platforms
    * [x] [Mastodon][] and Mastodon-compatible platforms ([Pleroma][])
    * [x] [IndieAuth][]-enabled sites
  * Send posts
-   * [ ] Notes
+   * [x] Notes
    * [ ] Articles
+   * [ ] Likes
+   * [ ] Shares / Reposts
+   * [ ] Bookmarking
+ * Replies
+   * [ ] RSVP to event
+   * [ ] Generic
  * Attach media to posts
    * [ ] Photos
    * [ ] Videos
@@ -35,7 +43,6 @@ desktop.
 
  * Rust (1.32.0)
  * Qt (5.12.0)
-   * Qt WebKit
 
 ## Contributing
 
